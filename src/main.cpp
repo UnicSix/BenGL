@@ -1,3 +1,6 @@
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/vector_float3.hpp"
+#include "glm/fwd.hpp"
 #include <cstddef>
 #include <cstdlib>
 #include <iostream>
@@ -6,25 +9,49 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 const GLint WIDTH = 800;
 const GLint HEIGHT = 600;
-GLuint VAO, VBO, shader, uniformXMove, uniformYMove;
+const float toRadians = 3.14159265f / 180.0f;
+GLuint VAO, IBO, VBO, shader, uniformModel, uniformProjection;
 
 bool direction = true;
 float triOffset = 0.0f;
 float triMaxOffset = 0.7f;
 float triIncrement = 0.00005f;
 
+float curAngle = 0.0f;
+
+bool sizeDirection = true;
+float curSize = 0.4f;
+float maxSize = 0.8f;
+float minSize = 0.1f;
+
 void CreateTriangle(){
 	GLfloat vertices[] = {
-		 0.0f,  0.5f,  0.0f,
-		 0.5f, -0.5f,  0.0f,
-		-0.5f, -0.5f,  0.0f
+		-1.0f, -1.0f,  0.0f,
+		 0.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  0.0f,
+		 0.0f,  1.0f,  0.0f
+	};
+
+	unsigned int indices[] = {
+		0, 3, 1,
+		1, 3, 2,
+		2, 3, 0,
+		0, 1, 2
 	};
 
 	// Bind VAO and VBO
 	glGenVertexArrays(1, &VAO); // Assign ID to VAO
 	glBindVertexArray(VAO);
+
+	glGenBuffers(1, &IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -34,6 +61,8 @@ void CreateTriangle(){
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	glBindVertexArray(0); // Unbind VAO and VBO
 }
 
@@ -43,20 +72,25 @@ static const char* vShader = "					\n\
 												\n\
 layout (location = 0) in vec3 pos;				\n\
 												\n\
-uniform float xMove;							\n\
+out vec4 vCol;									\n\
+												\n\
+uniform mat4 model;							\n\
+uniform mat4 projection;						\n\
 void main()										\n\
 {												\n\
-	gl_Position = vec4(pos.x+xMove, pos.y, pos.z, 1.0);\n\
+	gl_Position = projection* model* vec4(pos, 1.0);\n\
+	vCol = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);	\n\
 }";
 
 // Fragment shader
 static const char* fShader = "					\n\
 #version 330									\n\
+in vec4 vCol;									\n\
 out vec4 color;									\n\
 												\n\
 void main()										\n\
 {												\n\
-	color = vec4(0.4f, 0.8f, 0.75f, 1.0f);		\n\
+	color = vCol;		\n\
 }";
 
 void AddShader(GLuint program, const char* shaderCode, GLenum shaderType){
@@ -103,6 +137,7 @@ void CompileShader(){
 	if(!result){
 		glGetProgramInfoLog(shader, sizeof(eLog), NULL, eLog);
 		std::cout << "Error Linking Program: \n" << eLog << std::endl;
+		return;
 	}
 
 	glValidateProgram(shader);
@@ -110,8 +145,10 @@ void CompileShader(){
 	if(!result){
 		glGetProgramInfoLog(shader, sizeof(eLog), NULL, eLog);
 		std::cout << "Error Validating Program: \n" << eLog << std::endl;
+		return;
 	}
-	uniformXMove = glGetUniformLocation(shader, "xMove");
+	uniformModel = glGetUniformLocation(shader, "model");
+	uniformProjection = glGetUniformLocation(shader, "projection");
 }
 
 int main(){
@@ -158,12 +195,14 @@ int main(){
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
+	glEnable(GL_DEPTH_TEST);
 	// set viewport size
 	glViewport(0, 0, bufferWidth, bufferHeight);
 
 	CreateTriangle();
 	CompileShader();
 
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 	// loop until window closed
 	while(!glfwWindowShouldClose(mainWindow)){
 		// get and handle user input events
@@ -175,22 +214,36 @@ int main(){
 		else{
 			triOffset -= triIncrement;
 		}
-
 		if(abs(triOffset) >= triMaxOffset){
 			direction = !direction;
+		}
+		curAngle += 0.05f;	
+		if(curAngle >= 360.0f){
+			curAngle = 0.0f;
+		}
+		if(curSize >= maxSize || curSize <= minSize){
+			sizeDirection = !sizeDirection;
 		}
 
 		// clear window
 		glClearColor(0.4f, 0.2f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(shader);
-		glUniform1f(uniformXMove, triOffset);
+
+		glm::mat4 model(1.0f);
+		model = glm::translate(model, glm::vec3(triOffset, 0.0f, -2.5f));
+		// model = glm::rotate(model, curAngle* toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(curSize, curSize, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 
 		glUseProgram(0);
-		glBindVertexArray(0);
 		glfwSwapBuffers(mainWindow);
 	}
 
