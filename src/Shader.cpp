@@ -7,6 +7,7 @@ Shader::Shader(){
 	shaderID = 0;
 	uniformModel = 0;
 	uniformProjection = 0;
+	uniformView = 0;
 }
 
 void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode){
@@ -69,6 +70,9 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode){
 	}
 	uniformModel = glGetUniformLocation(shaderID, "model");
 	uniformProjection = glGetUniformLocation(shaderID, "projection");
+  uniformView = glGetUniformLocation(shaderID, "view");
+  uniformAmbientColor = glGetUniformLocation(shaderID, "dirLight.color");
+  uniformAmbientIntensity = glGetUniformLocation(shaderID, "dirLight.ambientIntensity");
 }
 
 GLuint Shader::GetProjectionLocation(){
@@ -76,6 +80,15 @@ GLuint Shader::GetProjectionLocation(){
 }
 GLuint Shader::GetModelLocation(){
 	return uniformModel;
+}
+GLuint Shader::GetViewLocation(){
+  return uniformView;
+}
+GLuint Shader::GetAmbientIntensityLocation(){
+  return uniformAmbientIntensity;
+}
+GLuint Shader::GetAmbientColorLocation(){
+  return uniformAmbientColor;
 }
 
 void Shader::UseShader(){
@@ -109,7 +122,7 @@ void Shader::AddShader(GLuint theProgram, const char* code, GLenum shaderType){
 	glGetShaderiv(theShader, GL_COMPILE_STATUS, &result);
 	if(!result){
 		glGetProgramInfoLog(theShader, 1024, NULL, eLog);
-		std::cout << "Error Compiling " << shaderType << "Shader: " << eLog << std::endl;
+		std::cout << "Error Compiling " << std::hex << shaderType << " Shader: " << eLog << std::endl;
 		return;
 	}
 

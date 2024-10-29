@@ -1,4 +1,5 @@
 #pragma once
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -15,8 +16,23 @@ public:
 	bool getShouldClose(){ return glfwWindowShouldClose(mainWindow); }
 	void swapBuffers(){glfwSwapBuffers(mainWindow);}
 
+  bool* getKeys(){return keys;}
+  GLfloat getXChange();
+  GLfloat getYChange();
+
 private:
 	GLFWwindow* mainWindow;
 	GLint width, height;
 	GLint bufferWidth, bufferHeight;
+  bool keys[1024];
+  GLfloat lastX;
+  GLfloat lastY;
+  GLfloat xChange;
+  GLfloat yChange;
+  GLfloat mouseSensitivity;
+  bool mouseFirstMoved;
+
+  void createCallbacks();
+  static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
+  static void handleMouse(GLFWwindow* window, double xPos, double yPos);
 };
