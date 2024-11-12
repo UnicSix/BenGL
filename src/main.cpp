@@ -5,6 +5,7 @@
 #include "glm/ext/vector_float4.hpp"
 #include "glm/fwd.hpp"
 #include "glm/trigonometric.hpp"
+#include "Material.h"
 #include "Texture.h"
 #include "Mesh.h"
 #include "Shader.h"
@@ -30,11 +31,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
 Window mainWindow;
 const GLint WIDTH = 940;
 const GLint HEIGHT = 800;
-const float toRadians = 3.14159265f / 180.0f;
 std::vector<std::unique_ptr<Mesh>> meshList;
 std::vector<std::unique_ptr<Shader>> shaderList;
 Camera mainCamera;
@@ -57,6 +56,9 @@ float minSize = 0.1f;
 Texture catTex;
 Texture cabaTex;
 Texture woodenFloor;
+
+Material shinyMaterial;
+Material dullMaterial;
 
 Light mainLight( 1.0f, 1.0f, 1.0f, 0.1f,
                  0.0f,-5.0f, 0.0f, 1.0f);
@@ -164,18 +166,12 @@ void CreateObjects(){
 }
 
 int main(){
-
-
   mainWindow = Window(WIDTH, HEIGHT); 
   mainWindow.Initialise();
-
-  // GLFWwindow *testWindow = glfwCreateWindow(WIDTH, HEIGHT, "TEST ImGui", NULL, NULL);
-  // int bufferWidth, bufferHeight;
-  // glfwGetFramebufferSize(testWindow, &bufferWidth, &bufferHeight);
-  // glViewport(0, 0, bufferWidth, bufferHeight);
-
   {
-    // Setup imgui context
+    shinyMaterial = Material(1.0f, 32);
+    dullMaterial = Material(0.3f, 4);
+    // Setup ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -184,6 +180,7 @@ int main(){
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(mainWindow.getWindow(), true);
     ImGui_ImplOpenGL3_Init();
+    // ImGui Setup
 
     CreateObjects();
     CreateShaders();
@@ -202,12 +199,14 @@ int main(){
     GLuint uniformProjection = 0;
     GLuint uniformModel = 0;
     GLuint uniformView = 0;
+    GLuint uniformEyePos = 0;
     GLuint uniformAmbientIntensity = 0;
     GLuint uniformAmbientColor = 0;
     GLuint uniformDirection = 0;
     GLuint uniformDiffuseIntensity = 0;
+    GLuint uniformSpecularIntensity = 0;
+    GLuint uniformShininess = 0;
 
-    bool isMenuActive = true;
     glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     glm::mat4 projection = glm::perspective(glm::radians(60.0f), (GLfloat)mainWindow.getBufferWidth() / (GLfloat)mainWindow.getBufferHeight(), 0.1f, 100.0f);
@@ -217,27 +216,26 @@ int main(){
       deltaTime = now-lastTime;
       lastTime = now;
 
-      bool show_demo_window = true;
-      bool show_another_window = false;
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
-      { // ImGui Button
+      { // ImGui Control Panel
         static float f = 0.0f;
         static int counter = 0;
 
         ImGui::Begin("Control Panel");                          // Create a window called "Hello, world!" and append into it.
 
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+        ImGui::Text("This is some useless text.");               // Display some text (you can use a format strings too)
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+        if (ImGui::Button("Button"))
+        // Buttons return true when clicked (most widgets return true when edited/activated)
             counter++;
         ImGui::SameLine();
         ImGui::Text("counter = %d", counter);
 
-            ImGui::Text("Application average %.1f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Application average %.1f ms/frame (%.0f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::End();
       }
       // Rendering
@@ -280,6 +278,8 @@ int main(){
       uniformAmbientColor = shaderList[0]->GetAmbientColorLocation();
       uniformDirection = shaderList[0]->GetDirectionLocation();
       uniformDiffuseIntensity = shaderList[0]->GetDiffuseIntensityLocation();
+      uniformSpecularIntensity = shaderList[0]->GetSpecularIntensityLocation();
+      uniformShininess = shaderList[0]->GetShininessLocation();
 
       mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor, uniformDiffuseIntensity, uniformDirection);
 
@@ -290,7 +290,9 @@ int main(){
       glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
       glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
       glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(mainCamera.calculateViewMatrix()));
+      glUniform3f(uniformEyePos, mainCamera.getCameraPosition().x, mainCamera.getCameraPosition().y, mainCamera.getCameraPosition().z);
       woodenFloor.UseTexture();
+      shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
       meshList[0]->RenderMesh();
 
       model = glm::mat4(1.0);

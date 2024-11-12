@@ -75,6 +75,8 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode){
   uniformAmbientIntensity = glGetUniformLocation(shaderID, "dirLight.ambientIntensity");
   uniformDirection = glGetUniformLocation(shaderID, "dirLight.direction");
   uniformDiffuseIntensity = glGetUniformLocation(shaderID, "dirLight.diffuseIntensity");
+  uniformSpecularIntensity = glGetUniformLocation(shaderID, "material.specularIntensity");
+  uniformShininess = glGetUniformLocation(shaderID, "material.shininess");
 }
 
 GLuint Shader::GetProjectionLocation(){
@@ -97,6 +99,14 @@ GLuint Shader::GetDirectionLocation(){
 }
 GLuint Shader::GetDiffuseIntensityLocation(){
   return uniformDiffuseIntensity;
+}
+
+GLuint Shader::GetSpecularIntensityLocation(){
+  return uniformSpecularIntensity;
+}
+
+GLuint Shader::GetShininessLocation(){
+  return uniformShininess;
 }
 
 void Shader::UseShader(){

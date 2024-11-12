@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "GLFW/glfw3.h"
 #include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include "glm/geometric.hpp"
 #include "glm/trigonometric.hpp"
 #include <iostream>
@@ -55,6 +56,9 @@ void Camera::mouseControl(GLfloat xChange, GLfloat yChange){
 }
 glm::mat4 Camera::calculateViewMatrix(){
   return glm::lookAt(position, position+front, up);
+}
+glm::vec3 Camera::getCameraPosition(){
+  return position;
 }
 
 void Camera::Update(){

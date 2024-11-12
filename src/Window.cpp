@@ -131,9 +131,9 @@ void Window::handleMouseDrag(GLFWwindow* window, double xPos, double yPos){
     }
     theWindow->xChange = xPos - theWindow->lastX;
     theWindow->yChange = theWindow->lastY - yPos;
-    theWindow->lastX = xPos;
-    theWindow->lastY = yPos;
   }
+  theWindow->lastX = xPos;
+  theWindow->lastY = yPos;
 }
 
 GLFWwindow* Window::getWindow(){
