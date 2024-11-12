@@ -15,6 +15,7 @@ Window::Window(){
   xChange = 0.0f;
   yChange = 0.0f;
   mouseFirstMoved = true;
+  mouseDragging = false;
   mouseSensitivity = 0.1f;
 }
 Window::Window(GLint windowWidth, GLint windowHeight){
@@ -84,7 +85,7 @@ int Window::Initialise(){
 
 void Window::createCallbacks(){
   glfwSetKeyCallback(mainWindow, handleKeys);
-  glfwSetCursorPosCallback(mainWindow, handleMouse);
+  glfwSetCursorPosCallback(mainWindow, handleMouseDrag);
 }
 
 GLfloat Window::getXChange(){
@@ -113,19 +114,26 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action , int 
   }
 }
 
-void Window::handleMouse(GLFWwindow* window, double xPos, double yPos){
+void Window::handleMouseDrag(GLFWwindow* window, double xPos, double yPos){
   Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
-  if(theWindow->mouseFirstMoved){
+  if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS){
+    theWindow->mouseDragging = true;
+  }
+  else if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE){
+    theWindow->mouseDragging = false;
+  }
+  if(theWindow->mouseDragging){
+    if(theWindow->mouseFirstMoved){
+      theWindow->lastX = xPos;
+      theWindow->lastY = yPos;
+      theWindow->mouseFirstMoved = false;
+    }
+    theWindow->xChange = xPos - theWindow->lastX;
+    theWindow->yChange = theWindow->lastY - yPos;
     theWindow->lastX = xPos;
     theWindow->lastY = yPos;
-    theWindow->mouseFirstMoved = false;
   }
-
-  theWindow->xChange = xPos - theWindow->lastX;
-  theWindow->yChange = theWindow->lastY - yPos;
-  theWindow->lastX = xPos;
-  theWindow->lastY = yPos;
 }
 
 GLFWwindow* Window::getWindow(){

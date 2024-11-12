@@ -13,6 +13,7 @@ public:
 
   void UseLight(GLfloat ambientIntensityLocation, GLfloat ambientColorLocation,
                 GLfloat diffuseIntensityLocation, GLfloat directionLocation);
+  void modLightColor(GLfloat red, GLfloat green, GLfloat blue);
 private:
   glm::vec3 color;
   GLfloat ambientIntensity;

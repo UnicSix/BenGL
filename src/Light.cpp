@@ -1,4 +1,5 @@
 #include "Light.h"
+#include "glm/ext/vector_float3.hpp"
 
 Light::Light(){
   color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -24,6 +25,11 @@ void Light::UseLight(GLfloat ambientIntensityLocation, GLfloat ambientColorLocat
   
   glUniform3f(directionLocation, direction.x, direction.y, direction.z);
   glUniform1f(diffuseIntensityLocation, diffuseIntensity);
+}
+
+void Light::modLightColor(GLfloat red, GLfloat green, GLfloat blue){
+  color = glm::vec3(red, green, blue);
+
 }
 
 Light::~Light(){}

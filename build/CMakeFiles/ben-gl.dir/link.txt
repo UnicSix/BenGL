@@ -1,3 +1,0 @@
-D:\msys2\mingw64\bin\cmake.exe -E rm -f CMakeFiles\ben-gl.dir/objects.a
-D:\msys2\mingw64\bin\ar.exe qc CMakeFiles\ben-gl.dir/objects.a @CMakeFiles\ben-gl.dir\objects1.rsp
-D:\msys2\mingw64\bin\c++.exe -g -Wl,--whole-archive CMakeFiles\ben-gl.dir/objects.a -Wl,--no-whole-archive -o ben-gl.exe -Wl,--out-implib,libben-gl.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\ben-gl.dir\linkLibs.rsp

@@ -2,6 +2,7 @@
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float3.hpp"
+#include "glm/ext/vector_float4.hpp"
 #include "glm/fwd.hpp"
 #include "glm/trigonometric.hpp"
 #include "Texture.h"
@@ -207,7 +208,7 @@ int main(){
     GLuint uniformDiffuseIntensity = 0;
 
     bool isMenuActive = true;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     glm::mat4 projection = glm::perspective(glm::radians(60.0f), (GLfloat)mainWindow.getBufferWidth() / (GLfloat)mainWindow.getBufferHeight(), 0.1f, 100.0f);
     // loop until window closed
@@ -225,12 +226,9 @@ int main(){
         static float f = 0.0f;
         static int counter = 0;
 
-        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+        ImGui::Begin("Control Panel");                          // Create a window called "Hello, world!" and append into it.
 
         ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-        ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-        ImGui::Checkbox("Another Window", &show_another_window);
-
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
@@ -239,7 +237,7 @@ int main(){
         ImGui::SameLine();
         ImGui::Text("counter = %d", counter);
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Application average %.1f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::End();
       }
       // Rendering
@@ -269,7 +267,8 @@ int main(){
       }
 
       // clear window
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+      mainLight.modLightColor(clear_color.r, clear_color.g, clear_color.b);
+      glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.z);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
