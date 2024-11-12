@@ -2,6 +2,9 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 class Window{
 public:
@@ -19,6 +22,7 @@ public:
   bool* getKeys(){return keys;}
   GLfloat getXChange();
   GLfloat getYChange();
+  GLFWwindow* getWindow();
 
 private:
 	GLFWwindow* mainWindow;

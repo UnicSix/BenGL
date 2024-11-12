@@ -7,18 +7,18 @@ project( BenGL )
 set( BenGL_SRC src/*.cpp )
 
 file( GLOB_RECURSE BenGL_SRC "src/*.cpp" )
-#file( GLOB_RECURSE IMGUI_SRC "/src/vender/imgui/i*.cpp" )
+#file( GLOB_RECURSE IMGUI_SRC "/src/vendor/imgui/i*.cpp" )
 
 add_executable( ben-gl
-	#src/vender/stb_image/stb_image.cpp
+	#src/vendor/stb_image/stb_image.cpp
 	#${IMGUI_SRC}
 	${BenGL_SRC}
 )
 
 include_directories( "src/" )
-include_directories( "src/vender" )
+include_directories( "src/vendor" )
 include_directories( "lib/glm" )
-include_directories( "src/vender/imgui" )
+include_directories( "src/vendor/imgui" )
 
 set_property(TARGET ben-gl PROPERTY CXX_STANDARD 17)
 target_compile_options( ben-gl PRIVATE -Wall )

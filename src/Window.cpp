@@ -1,5 +1,7 @@
 #include "Window.h"
 #include "GLFW/glfw3.h"
+#include "glm/ext/vector_float4.hpp"
+#include "imgui_impl_opengl3.h"
 #include <cstddef>
 #include <iostream>
 
@@ -58,7 +60,7 @@ int Window::Initialise(){
 
   // Handle key and mouse input
   createCallbacks();
-  glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  //glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   // Allow modern extension access
   glewExperimental = GL_TRUE;
@@ -124,6 +126,10 @@ void Window::handleMouse(GLFWwindow* window, double xPos, double yPos){
   theWindow->yChange = theWindow->lastY - yPos;
   theWindow->lastX = xPos;
   theWindow->lastY = yPos;
+}
+
+GLFWwindow* Window::getWindow(){
+  return mainWindow;
 }
 
 Window::~Window(){
